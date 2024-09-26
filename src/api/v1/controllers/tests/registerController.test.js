@@ -4,14 +4,12 @@ const app = require("../../../../../app");
 describe("POST /api/register", () => {
   it("should register a new user", async () => {
     const response = await request(app).post("/api/register").send({
-      first_name: "John", // Valid first name
-      last_name: "Doe", // Valid last name
+      first_name: "John",
+      last_name: "Doe",
       email: "johndoe2@example.com",
       password: "password123",
       confirmPassword: "password123",
     });
-
-    console.log(response.body); // Log the response body to see what is returned
     expect(response.statusCode).toBe(201);
     expect(response.body).toHaveProperty("token");
   });
@@ -23,7 +21,6 @@ describe("POST /api/register", () => {
       password: "password123",
       confirmPassword: "password123",
     });
-
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty("message", "Email already exists");
   });
