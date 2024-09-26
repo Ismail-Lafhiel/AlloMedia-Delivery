@@ -6,7 +6,7 @@ const morgan = require("morgan");
 const fs = require("fs");
 const path = require("path");
 
-// Loading environment variables based on the NODE_ENV
+// Load the appropriate .env file
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
 dotenv.config({ path: envFile });
 
@@ -14,13 +14,13 @@ const app = express();
 
 app.use(morgan("dev"));
 
-// Creating the logs directory if it doesn't exist
+// Creating logs directory if it doesn't exist
 const logDirectory = path.join(__dirname, "logs");
 if (!fs.existsSync(logDirectory)) {
   fs.mkdirSync(logDirectory);
 }
 
-// Creating a write stream for logging to the logs.log file
+// Creating a write stream for logging to the journal.log file
 const accessLogStream = fs.createWriteStream(
   path.join(logDirectory, "journal.log"),
   { flags: "a" }
@@ -40,5 +40,10 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something broke!");
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Only start the server if not in a test environment
+if (process.env.NODE_ENV !== "test") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+module.exports = app; // Export the app for testing

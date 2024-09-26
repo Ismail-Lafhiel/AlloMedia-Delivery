@@ -3,6 +3,8 @@ const { hashPassword, generateToken } = require("../../helpers/authHelper");
 
 const registerUser = async (req, res) => {
   try {
+    console.log(req.body); // Log the incoming request body for debugging
+
     const { first_name, last_name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
@@ -34,6 +36,7 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(error.message); // Log the error message
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });

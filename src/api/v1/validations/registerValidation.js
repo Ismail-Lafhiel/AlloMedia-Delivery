@@ -5,15 +5,15 @@ const validateRegistration = [
         .isString()
         .notEmpty()
         .withMessage('First name is required')
-        .isLength({ min: 5 })
-        .withMessage('First name must be at least 5 characters long'),
+        .isLength({ min: 3 })
+        .withMessage('First name must be at least 3 characters long'),
     
     body('last_name')
         .isString()
         .notEmpty()
         .withMessage('Last name is required')
-        .isLength({ min: 5 })
-        .withMessage('Last name must be at least 5 characters long'),
+        .isLength({ min: 3 })
+        .withMessage('Last name must be at least 3 characters long'),
 
     body('email')
         .isEmail()

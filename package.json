@@ -19,6 +19,6 @@
     "supertest": "^7.0.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "cross-env NODE_ENV=test jest"
   }
 }
