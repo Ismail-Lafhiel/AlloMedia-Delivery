@@ -1,26 +1,48 @@
-const { User } = require("../../models/User");
-const bcrypt = require("bcrypt");
+const User = require("../../models/User");
+const { comparePassword, generateToken } = require("../../helpers/authHelper");
 
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = req.body;
+
+    //Checking if the email or password are empty
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    // Finding the user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Comparing password
+    const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate a token or perform any other login logic
-    // const token = generateToken(user);
-    return res.status(200).json({ message: "Login successful", token });
+    // Generating a JWT token
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      message: "User logged in successfully",
+      token,
+      user: {
+        id: user._id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error(error.message);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
   }
 };
 
