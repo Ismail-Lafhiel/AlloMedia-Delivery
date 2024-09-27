@@ -2,8 +2,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-// Number of salt rounds for bcryptjs hashing
-// Some users may have the same password, so we need to ensure their hashed values will be different to prevent attackers from using precomputed tables (rainbow tables) to guess the password
 const SALT_ROUNDS = 10;
 
 const hashPassword = async (password) => {
@@ -41,8 +39,32 @@ const generateToken = (user) => {
   }
 };
 
+// Confirm email helper function
+const confirmEmail = async (token, User) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return { success: false, message: "Invalid token or user not found" };
+    }
+
+    if (user.emailConfirmed) {
+      return { success: false, message: "Email already confirmed" };
+    }
+
+    user.emailConfirmed = true;
+    await user.save();
+
+    return { success: true, message: "Email confirmed successfully" };
+  } catch (error) {
+    return { success: false, message: "Invalid or expired token" };
+  }
+};
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
+  confirmEmail,
 };

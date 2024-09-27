@@ -1,5 +1,6 @@
-const User = require("../../models/User");
 const { hashPassword, generateToken } = require("../../helpers/authHelper");
+const { sendConfirmationEmail } = require("../../services/emailService");
+const User = require("../../models/User");
 
 const registerUser = async (req, res) => {
   try {
@@ -18,20 +19,17 @@ const registerUser = async (req, res) => {
       last_name,
       email,
       password: hashedPassword,
+      emailConfirmed: false,
     });
 
-    // Generate a JWT token
+    // Generate a JWT token for email confirmation
     const token = generateToken(newUser);
 
+    // Send confirmation email with token
+    await sendConfirmationEmail(newUser, token);
+
     return res.status(201).json({
-      message: "User registered successfully",
-      token,
-      user: {
-        id: newUser.id,
-        first_name: newUser.first_name,
-        last_name: newUser.last_name,
-        email: newUser.email,
-      },
+      message: "User registered successfully, please confirm your email.",
     });
   } catch (error) {
     return res
