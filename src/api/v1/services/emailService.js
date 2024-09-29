@@ -47,8 +47,23 @@ const sendFailedLoginNotification = async (user) => {
   await sendEmail(user.email, subject, text);
 };
 
+// Sending a password reset email
+const sendResetPasswordEmail = async (user, token) => {
+  const resetUrl = `http://localhost:3000/api/reset-password?token=${token}`;
+
+  const subject = "Reset Your Password";
+  const text = `Hello ${user.first_name},\n\n` +
+               `You requested to reset your password. Please click the link below to reset it:\n` +
+               `${resetUrl}\n\n` +
+               `If you did not request this, please ignore this email.\n\n` +
+               `Thank you,\nYour Support Team`;
+
+  await sendEmail(user.email, subject, text);
+};
+
 module.exports = {
   sendEmail,
   sendConfirmationEmail,
   sendFailedLoginNotification,
+  sendResetPasswordEmail
 };

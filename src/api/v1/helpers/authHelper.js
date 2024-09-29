@@ -71,10 +71,25 @@ const verifyToken = (token) => {
   }
 };
 
+const generateResetToken = (user) => {
+  try {
+    const payload = {
+      id: user._id,
+      email: user.email,
+    };
+    return jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+  } catch (error) {
+    throw new Error("Error while generating reset token");
+  }
+};
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   confirmEmail,
-  verifyToken
+  verifyToken,
+  generateResetToken,
 };
