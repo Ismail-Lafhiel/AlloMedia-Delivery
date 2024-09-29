@@ -31,7 +31,7 @@ const sendConfirmationEmail = async (user, token) => {
   const confirmationUrl = `http://localhost:3000/api/confirm-email?token=${token}`;
 
   const subject = "Confirm your email";
-  const text = `Hello ${user.first_name}, Please confirm your email by clicking the link: <a href='${confirmationUrl}' target='__blank'>Click hre to confirm</a>`;
+  const text = `Hello ${user.first_name}, Please confirm your email by clicking the link: ${confirmationUrl}`;
 
   await sendEmail(user.email, subject, text);
 };
@@ -48,22 +48,24 @@ const sendFailedLoginNotification = async (user) => {
 };
 
 // Sending a password reset email
-const sendResetPasswordEmail = async (user, token) => {
+const sendResetPasswordEmail = async (user, token, confirmationCode) => {
   const resetUrl = `http://localhost:3000/api/reset-password?token=${token}`;
 
   const subject = "Reset Your Password";
-  const text = `Hello ${user.first_name},\n\n` +
-               `You requested to reset your password. Please click the link below to reset it:\n` +
-               `${resetUrl}\n\n` +
-               `If you did not request this, please ignore this email.\n\n` +
-               `Thank you,\nYour Support Team`;
+  const text =
+    `Hello ${user.first_name},\n\n` +
+    `You requested to reset your password. Please click the link below to reset it:\n` +
+    `${resetUrl}\n\n` +
+    `Your confirmation code is: ${confirmationCode}\n` +
+    `Please enter this code to proceed with your password reset.\n\n` +
+    `If you did not request this, please ignore this email.\n\n` +
+    `Thank you,\nYour Support Team`;
 
   await sendEmail(user.email, subject, text);
 };
-
 module.exports = {
   sendEmail,
   sendConfirmationEmail,
   sendFailedLoginNotification,
-  sendResetPasswordEmail
+  sendResetPasswordEmail,
 };
