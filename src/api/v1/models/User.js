@@ -33,6 +33,8 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
   emailConfirmed: { type: Boolean, default: false },
+  failedLoginAttempts: { type: Number, default: 0 },
+  lastLoginAttempt: { type: Date },
 });
 
 const User = mongoose.model("User", userSchema);

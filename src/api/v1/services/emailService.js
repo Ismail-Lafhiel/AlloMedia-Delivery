@@ -36,7 +36,19 @@ const sendConfirmationEmail = async (user, token) => {
   await sendEmail(user.email, subject, text);
 };
 
+// sending failed login attempt notification
+const sendFailedLoginNotification = async (user) => {
+  const subject = "Failed Login Attempt";
+  const text =
+    `Hello ${user.first_name},\n\n` +
+    `We noticed ${user.failedLoginAttempts} failed login attempts to your account. ` +
+    `If this wasn't you, we recommend changing your password immediately.\n\n` +
+    `Thank you, \nYour Security Team`;
+  await sendEmail(user.email, subject, text);
+};
+
 module.exports = {
   sendEmail,
   sendConfirmationEmail,
+  sendFailedLoginNotification,
 };
