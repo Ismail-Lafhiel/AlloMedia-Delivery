@@ -5,7 +5,7 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    //Checking if the email or password are empty
+    // Checking if the email or password are empty
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
@@ -17,6 +17,13 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Checkung if the email is confirmed
+    if (!user.emailConfirmed) {
+      return res
+        .status(403)
+        .json({ message: "Please confirm your email before logging in." });
     }
 
     // Comparing password
