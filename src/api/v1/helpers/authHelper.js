@@ -62,9 +62,19 @@ const confirmEmail = async (token, User) => {
   }
 };
 
+const verifyToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return { valid: true, decoded };
+  } catch (error) {
+    return { valid: false, message: "Invalid or expired token." };
+  }
+};
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateToken,
   confirmEmail,
+  verifyToken
 };

@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./src/config/database");
 const routes = require("./src/api/v1/routes");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
 
@@ -27,8 +28,11 @@ const accessLogStream = fs.createWriteStream(
 );
 app.use(morgan("combined", { stream: accessLogStream }));
 
+// Middlewares
+app.use(cookieParser()); 
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
+//
 
 connectDB();
 
