@@ -5,7 +5,7 @@ const {
   hashPassword,
 } = require("../../helpers/authHelper");
 const { sendResetPasswordEmail } = require("../../services/emailService");
-const {generate2FACode} = require("../../helpers/send2FACode")
+const { generate2FACode } = require("../../helpers/send2FACode");
 
 let tempConfirmationCode;
 
@@ -27,8 +27,8 @@ const requestPasswordReset = async (req, res) => {
   await sendResetPasswordEmail(user, token, tempConfirmationCode);
 
   return res.status(200).json({
-    message: "Password reset email sent. Please check your email for the confirmation code.",
-    token,
+    message:
+      "Password reset email sent. Please check your email for the confirmation code.",
   });
 };
 
