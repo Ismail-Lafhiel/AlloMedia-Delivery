@@ -11,7 +11,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    // Hash the password
+    // Hashing the password
     const hashedPassword = await hashPassword(password);
 
     const newUser = await User.create({
@@ -22,10 +22,10 @@ const registerUser = async (req, res) => {
       emailConfirmed: false,
     });
 
-    // Generate a JWT token for email confirmation
+    // Generating a JWT token for email confirmation
     const token = generateToken(newUser);
 
-    // Send confirmation email with token
+    // Sending confirmation email with token
     await sendConfirmationEmail(newUser, token);
 
     return res.status(201).json({
