@@ -8,31 +8,29 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Basic validation
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required." });
     }
 
-    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials." });
+      return res.status(403).json({ message: "Invalid credentials." });
     }
 
-    // Check if the email is confirmed
+    // Checking if the email is confirmed
     if (!user.emailConfirmed) {
       return res.status(403).json({ message: "Please confirm your email before logging in." });
     }
 
-    // Compare password
+    // Comparing password
     const isMatch = await comparePassword(password, user.password);
     user.lastLoginAttempt = new Date();
 
     if (!isMatch) {
-      // Increment failed login attempts
+      // Incrementing failed login attempts
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
 
-      // Check if failed login attempts reached max
+      // Checking if failed login attempts reached max
       if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
         await sendFailedLoginNotification(user); // Notify user about the failed attempts
         user.failedLoginAttempts = 0; // Reset after notification
@@ -42,11 +40,11 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: "Invalid credentials." });
     }
 
-    // Reset failed login attempts on successful login
+    // Resetting failed login attempts on successful login
     user.failedLoginAttempts = 0;
     await user.save();
 
-    // Generate a JWT token
+    // Generating a JWT token
     const token = generateToken(user);
 
     return res.status(200).json({

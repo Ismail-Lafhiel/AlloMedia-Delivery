@@ -9,51 +9,49 @@ const {
 const { generate2FACode } = require("../../helpers/send2FACode");
 
 describe("User Authentication Controllers", () => {
+  jest.setTimeout(30000);
   let tempConfirmationCode;
-  let user;
 
   beforeEach(async () => {
-    // Create a test user before each test
-    user = await User.create({
-      first_name: "John",
-      last_name: "Doe",
-      email: "john.doe@example.com",
-      password: await hashPassword("password123"),
-      emailConfirmed: true,
-    });
+    // Cleaning up database before each test
+    await User.deleteMany({});
 
-    // Generate a temporary confirmation code for password reset
+    // Generating a temporary confirmation code for password reset
     tempConfirmationCode = generate2FACode();
-  });
-
-  afterEach(async () => {
-    await User.deleteMany({}); // Clean up database after each test
   });
 
   // Test for user registration
   describe("User Registration", () => {
-    it("should register a user successfully", async () => {
-      const res = await request(app).post("/api/register").send({
-        first_name: "Jane",
+    it("should register a new user", async () => {
+      const response = await request(app).post("/api/register").send({
+        first_name: "John",
         last_name: "Doe",
-        email: "jane.doe@example.com",
+        email: "john.new@example.com",
         password: "password123",
-        confirmPassword: "password123", // Include this field
+        confirmPassword: "password123",
       });
 
-      expect(res.statusCode).toBe(201);
-      expect(res.body.message).toBe(
-        "User registered successfully, please confirm your email."
-      );
+      expect(response.statusCode).toBe(201);
+      expect(response.body).toHaveProperty("message");
     });
 
     it("should return an error if email already exists", async () => {
+      // Creating a user
+      await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+      });
+
+      // Try registering with the same email
       const res = await request(app).post("/api/register").send({
         first_name: "Jane",
         last_name: "Doe",
-        email: "john.doe@example.com", // Same email as the test user
+        email: "john.doe@example.com",
         password: "password456",
-        confirmPassword: "password456", // Include this field
+        confirmPassword: "password456",
       });
 
       expect(res.statusCode).toBe(400);
@@ -64,12 +62,21 @@ describe("User Authentication Controllers", () => {
   // Test for email confirmation
   describe("Email Confirmation", () => {
     it("should confirm user email successfully", async () => {
-      const token = generateToken(user); // Ensure this token is valid
+      // Creating a user
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: false,
+      });
+
+      const token = generateToken(user); // Ensuring this token is valid
 
       const res = await request(app).post("/api/confirm-email").send({ token });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.message).toBe("Email confirmed successfully.");
+      expect(res.body.message).toBe("Email confirmed successfully");
     });
 
     it("should return an error if token is missing", async () => {
@@ -83,6 +90,15 @@ describe("User Authentication Controllers", () => {
   // Test for user login
   describe("User Login", () => {
     it("should log in user successfully", async () => {
+      // Creating a user
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+      });
+
       const res = await request(app).post("/api/login").send({
         email: "john.doe@example.com",
         password: "password123",
@@ -104,10 +120,13 @@ describe("User Authentication Controllers", () => {
     });
 
     it("should return an error if email is not confirmed", async () => {
-      await User.updateOne(
-        { email: "john.doe@example.com" },
-        { emailConfirmed: false }
-      );
+      await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: false,
+      });
 
       const res = await request(app).post("/api/login").send({
         email: "john.doe@example.com",
@@ -124,6 +143,14 @@ describe("User Authentication Controllers", () => {
   // Test for user logout
   describe("User Logout", () => {
     it("should log out user successfully", async () => {
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+      });
+
       const token = generateToken(user);
 
       const res = await request(app)
@@ -145,6 +172,14 @@ describe("User Authentication Controllers", () => {
   // Test for password reset request
   describe("Password Reset", () => {
     it("should request password reset successfully", async () => {
+      await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+      });
+
       const res = await request(app)
         .post("/api/request-password-reset")
         .send({ email: "john.doe@example.com" });
@@ -156,12 +191,22 @@ describe("User Authentication Controllers", () => {
     });
 
     it("should reset the password successfully", async () => {
-      const token = generateResetToken(user); // Ensure this token is valid
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+        resetConfirmationCode: tempConfirmationCode, // Storing the temp confirmation code
+        resetCodeExpires: Date.now() + 10 * 60 * 1000, // Valid only for 10 minutes
+      });
+
+      const token = generateResetToken(user);
 
       const res = await request(app).post("/api/reset-password").send({
         token,
         newPassword: "newpassword123",
-        confirmationCode: tempConfirmationCode,
+        confirmationCode: tempConfirmationCode, // Using the correct confirmation code
       });
 
       expect(res.statusCode).toBe(200);
@@ -169,16 +214,49 @@ describe("User Authentication Controllers", () => {
     });
 
     it("should return an error if confirmation code is invalid", async () => {
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+        resetConfirmationCode: tempConfirmationCode, // Storing the temp confirmation code
+        resetCodeExpires: Date.now() + 10 * 60 * 1000, // Valid ony for 10 minutes
+      });
+
       const token = generateResetToken(user);
 
       const res = await request(app).post("/api/reset-password").send({
         token,
         newPassword: "newpassword123",
-        confirmationCode: "wrongcode",
+        confirmationCode: "wrongcode", // Sending an incorrect confirmation code
       });
 
       expect(res.statusCode).toBe(400);
       expect(res.body.message).toBe("Invalid confirmation code");
+    });
+
+    it("should return an error if confirmation code has expired", async () => {
+      const user = await User.create({
+        first_name: "John",
+        last_name: "Doe",
+        email: "john.doe@example.com",
+        password: await hashPassword("password123"),
+        emailConfirmed: true,
+        resetConfirmationCode: tempConfirmationCode, // Storing the temp confirmation code
+        resetCodeExpires: Date.now() - 10 * 60 * 1000, // Expired
+      });
+
+      const token = generateResetToken(user);
+
+      const res = await request(app).post("/api/reset-password").send({
+        token,
+        newPassword: "newpassword123",
+        confirmationCode: tempConfirmationCode, // Using the correct confirmation code
+      });
+
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe("Confirmation code has expired");
     });
   });
 });

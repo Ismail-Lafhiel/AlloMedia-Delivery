@@ -35,6 +35,8 @@ const userSchema = new mongoose.Schema({
   emailConfirmed: { type: Boolean, default: false },
   failedLoginAttempts: { type: Number, default: 0 },
   lastLoginAttempt: { type: Date },
+  resetConfirmationCode: { type: String },
+  resetCodeExpires: { type: Date },
 });
 
 const User = mongoose.model("User", userSchema);
