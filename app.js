@@ -6,6 +6,12 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const fs = require("fs");
 const path = require("path");
+const cors = require("cors");
+
+// configure the cross origins to communicate with the front end
+const corsOptions = {
+  origin: ["http://localhost:5173/"],
+};
 
 // Load the appropriate .env file
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
@@ -29,7 +35,7 @@ const accessLogStream = fs.createWriteStream(
 app.use(morgan("combined", { stream: accessLogStream }));
 
 // Middlewares
-app.use(cookieParser()); 
+app.use(cookieParser());
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 //
@@ -43,6 +49,10 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
+
+// use 
+app.use(cors(corsOptions));
+
 
 // Only start the server if not in a test environment
 if (process.env.NODE_ENV !== "test") {

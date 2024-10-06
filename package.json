@@ -3,6 +3,7 @@
     "aws-sdk": "^2.1691.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "express-validator": "^7.2.0",
@@ -11,6 +12,7 @@
     "mongoose": "^8.6.3",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.15",
+    "nodemon": "^3.1.7",
     "sinon": "^19.0.2",
     "validator": "^13.12.0",
     "winston": "^3.14.2"
@@ -22,6 +24,8 @@
     "supertest": "^7.0.0"
   },
   "scripts": {
-    "test": "cross-env NODE_ENV=test jest"
+    "test": "cross-env NODE_ENV=test jest",
+    "start": "node app",
+    "dev": "nodemon app"
   }
 }
