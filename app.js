@@ -8,16 +8,18 @@ const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
 
-// configure the cross origins to communicate with the front end
-const corsOptions = {
-  origin: ["http://localhost:5173/"],
-};
-
 // Load the appropriate .env file
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
 dotenv.config({ path: envFile });
 
 const app = express();
+
+// CORS middleware
+const corsOptions = {
+  origin: ["http://localhost:5173"], // Removed trailing slash
+};
+
+app.use(cors(corsOptions)); // Use CORS middleware before defining routes
 
 app.use(morgan("dev"));
 
@@ -36,23 +38,17 @@ app.use(morgan("combined", { stream: accessLogStream }));
 
 // Middlewares
 app.use(cookieParser());
-// Middleware to parse incoming requests with JSON payloads
-app.use(express.json());
-//
+app.use(express.json()); // Middleware to parse incoming requests with JSON payloads
 
 connectDB();
 
-app.use("/api", routes);
+app.use("/api", routes); // Define your routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something broke!");
 });
-
-// use 
-app.use(cors(corsOptions));
-
 
 // Only start the server if not in a test environment
 if (process.env.NODE_ENV !== "test") {

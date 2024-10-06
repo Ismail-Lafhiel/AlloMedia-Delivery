@@ -28,7 +28,7 @@ const sendEmail = async (to, subject, text) => {
 
 // Sending confirmation email function
 const sendConfirmationEmail = async (user, token) => {
-  const confirmationUrl = `http://localhost:3000/api/confirm-email?token=${token}`;
+  const confirmationUrl = `${process.env.FRONTEND_URL}/confirm-email?token=${token}`;
 
   const subject = "Confirm your email";
   const text = `Hello ${user.first_name}, Please confirm your email by clicking the link: ${confirmationUrl}`;

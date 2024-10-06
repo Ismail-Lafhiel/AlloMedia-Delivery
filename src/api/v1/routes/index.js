@@ -15,5 +15,5 @@ router.use("/login", checkAuth, loginRoute);
 router.use("/confirm-email", confirmEmailRoute);
 router.use("/logout", authenticateToken, logoutRoute);
 router.use("/request-password-reset", requestResetPasswordRoute);
-router.use("/reset-password", resetPasswordRoute);
+router.use("/reset-password",authenticateToken, resetPasswordRoute);
 module.exports = router;

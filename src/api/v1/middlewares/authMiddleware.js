@@ -2,18 +2,11 @@ const jwt = require("jsonwebtoken");
 const { isBlacklisted } = require("../utils/tokenBlacklist");
 require("dotenv").config();
 
-const authMiddleware = (req, res, next) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "Unauthorized access." });
-  }
-  next();
-};
-
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "No token provided." });
+    return res.status(401).json({ message: "Unauthorized access."  });
   }
 
   if (isBlacklisted(token)) {
@@ -31,6 +24,5 @@ const authenticateToken = (req, res, next) => {
 };
 
 module.exports = {
-  authMiddleware,
   authenticateToken,
 };

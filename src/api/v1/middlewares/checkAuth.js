@@ -1,6 +1,7 @@
 const checkAuth = (req, res, next) => {
   if (req.user) {
-    return res.status(401).json({ message: "You are already logged in." });
+    // If the user is logged in, return an error message
+    return res.status(403).json({ message: "You are already logged in." });
   }
   next();
 };
