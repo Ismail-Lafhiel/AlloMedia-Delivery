@@ -6,6 +6,8 @@ const validateRegistration = [
     .withMessage("First name is required")
     .isString()
     .withMessage("First name must be a string")
+    .matches(/^[A-Za-z]+$/)
+    .withMessage("First name must contain only letters")
     .isLength({ min: 3 })
     .withMessage("First name must be at least 3 characters long"),
 
@@ -14,6 +16,8 @@ const validateRegistration = [
     .withMessage("Last name is required")
     .isString()
     .withMessage("Last name must be a string")
+    .matches(/^[A-Za-z]+$/)
+    .withMessage("Last name must contain only letters")
     .isLength({ min: 3 })
     .withMessage("Last name must be at least 3 characters long"),
 
