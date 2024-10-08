@@ -65,6 +65,29 @@ const verifyTwoFactorAuthentication = async (req, res) => {
   });
 };
 
+const resendTwoFactorCode = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+
+  // Generating a new temporary 2FA confirmation code (6-digit)
+  const newConfirmationCode = generate2FACode();
+
+  // Update the confirmation code and its expiry in the database
+  user.resetConfirmationCode = newConfirmationCode;
+  user.resetCodeExpires = Date.now() + 10 * 60 * 1000;
+  await user.save();
+
+  await send2FACodeEmail(user, newConfirmationCode);
+
+  return res.status(200).json({
+    message: "New 2FA code sent to your email. Please verify to proceed.",
+  });
+};
+
 // Reset the password
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
@@ -95,5 +118,6 @@ const resetPassword = async (req, res) => {
 module.exports = {
   requestPasswordReset,
   verifyTwoFactorAuthentication,
+  resendTwoFactorCode,
   resetPassword,
 };
