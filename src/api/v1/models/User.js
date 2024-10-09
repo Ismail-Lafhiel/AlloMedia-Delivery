@@ -28,6 +28,12 @@ const userSchema = new mongoose.Schema({
     required: [true, "Password is required"],
     minlength: [8, "Password must be at least 8 characters long"],
   },
+  phone: {
+    type: String,
+    required: [true, "Phone number is required"],
+    match: [/^\+?[1-9]\d{1,14}$/, "Phone number must be valid and in international format"],
+    trim: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

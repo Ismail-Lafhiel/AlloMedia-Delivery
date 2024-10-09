@@ -19,5 +19,5 @@ router.use("/logout", authenticateToken, logoutRoute);
 router.use("/request-password-reset", requestResetPasswordRoute);
 router.use("/verify-2fa", TwoFactorAuthenticationRoute);
 router.use("/resend-code", resendTwoFactorCodeRoute);
-router.use("/reset-password", authenticateToken, resetPasswordRoute);
+router.use("/reset-password", resetPasswordRoute);
 module.exports = router;
