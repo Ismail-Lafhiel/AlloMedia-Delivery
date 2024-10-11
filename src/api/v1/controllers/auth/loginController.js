@@ -2,14 +2,17 @@ const User = require("../../models/User");
 const { comparePassword, generateToken } = require("../../helpers/authHelper");
 const { sendFailedLoginNotification } = require("../../services/emailService");
 
-const MAX_FAILED_ATTEMPTS = 3;
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_TIME = 60 * 60 * 1000; // 1 hour
 
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
     }
 
     const user = await User.findOne({ email });
@@ -17,34 +20,62 @@ const loginUser = async (req, res) => {
       return res.status(403).json({ message: "Invalid credentials." });
     }
 
-    // Checking if the email is confirmed
-    if (!user.emailConfirmed) {
-      return res.status(403).json({ message: "Please confirm your email before logging in." });
+    // Check if the user is locked out
+    if (user.isLocked) {
+      const now = new Date();
+      if (now < user.lockoutUntil) {
+        const remainingTime = Math.ceil((user.lockoutUntil - now) / 1000);
+        return res.status(403).json({
+          message: `Maximum login attempts reached. Please try again in ${remainingTime} seconds.`,
+          lockout: true,
+        });
+      } else {
+        // Reset lockout status if the lockout period has expired
+        user.isLocked = false;
+        user.failedLoginAttempts = 0;
+        user.lockoutUntil = null;
+        await user.save(); // Saving changes after reset
+      }
     }
 
-    // Comparing password
+    // Checking if the email is confirmed
+    if (!user.emailConfirmed) {
+      return res
+        .status(403)
+        .json({ message: "Please confirm your email before logging in." });
+    }
+
+    // Compare password
     const isMatch = await comparePassword(password, user.password);
     user.lastLoginAttempt = new Date();
 
     if (!isMatch) {
-      // Incrementing failed login attempts
+      // Increment failed login attempts
       user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
 
-      // Checking if failed login attempts reached max
+      // Check if failed login attempts reached max
       if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
-        await sendFailedLoginNotification(user); // Notify user about the failed attempts
-        user.failedLoginAttempts = 0; // Reset after notification
+        user.isLocked = true;
+        user.lockoutUntil = new Date(Date.now() + LOCKOUT_TIME);
+        await sendFailedLoginNotification(user);
+        await user.save();
+        return res.status(403).json({
+          message: "You have been locked out due to too many failed attempts.",
+          lockout: true,
+        });
       }
 
-      await user.save();
+      await user.save(); // Saving failed attempts
       return res.status(403).json({ message: "Invalid credentials." });
     }
 
-    // Resetting failed login attempts on successful login
+    // Reset failed login attempts on successful login
     user.failedLoginAttempts = 0;
+    user.isLocked = false;
+    user.lockoutUntil = null;
     await user.save();
 
-    // Generating a JWT token
+    // Generate a JWT token
     const token = generateToken(user);
 
     return res.status(200).json({
@@ -59,7 +90,9 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error: ", error.message);
-    return res.status(500).json({ message: "Internal server error.", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Internal server error.", error: error.message });
   }
 };
 

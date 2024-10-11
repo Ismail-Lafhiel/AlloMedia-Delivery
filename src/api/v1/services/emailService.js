@@ -48,7 +48,7 @@ const sendFailedLoginNotification = async (user) => {
 
 // Sending a password reset email
 const sendResetPasswordEmail = async (user, token, confirmationCode) => {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}&confirmationCode=${confirmationCode}`; // Ensure confirmationCode is included
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}&confirmationCode=${confirmationCode}`;
 
   const subject = "Reset Your Password";
   const text =

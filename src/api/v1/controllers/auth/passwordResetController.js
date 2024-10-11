@@ -20,7 +20,7 @@ const requestPasswordReset = async (req, res) => {
 
   // Store the confirmation code and its expiry in the database
   user.resetConfirmationCode = tempConfirmationCode;
-  user.resetCodeExpires = Date.now() + 10 * 60 * 1000; // Code expires in 10 minutes
+  user.resetCodeExpires = Date.now() + 10 * 60 * 500; // Code expires in 5 minutes
   await user.save();
 
   // Send the 2FA code via email
@@ -49,13 +49,13 @@ const verifyTwoFactorAuthentication = async (req, res) => {
     return res.status(400).json({ message: "Confirmation code has expired" });
   }
 
-  // Generate a JWT token for password reset
+  // Generating a JWT token for password reset
   const token = generateResetToken(user);
 
-  // Send the reset password email with the token and confirmation code
-  await sendResetPasswordEmail(user, token, user.resetConfirmationCode); // Ensure the confirmation code is passed here
+  // Sending the reset password email with the token and confirmation code
+  await sendResetPasswordEmail(user, token, user.resetConfirmationCode);
 
-  // Clear the confirmation code after successful verification
+  // Clearing the confirmation code after successful verification
   user.resetConfirmationCode = null;
   user.resetCodeExpires = null;
   await user.save();
@@ -76,9 +76,9 @@ const resendTwoFactorCode = async (req, res) => {
   // Generating a new temporary 2FA confirmation code (6-digit)
   const newConfirmationCode = generate2FACode();
 
-  // Update the confirmation code and its expiry in the database
+  // Updating the confirmation code and its expiry in the database
   user.resetConfirmationCode = newConfirmationCode;
-  user.resetCodeExpires = Date.now() + 10 * 60 * 1000;
+  user.resetCodeExpires = Date.now() + 10 * 60 * 500;
   await user.save();
 
   await send2FACodeEmail(user, newConfirmationCode);

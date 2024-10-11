@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { addToBlacklist } = require("../../utils/tokenBlacklist");
-const { verifyToken } = require("../../helpers/authHelper"); // Import the helper method
+const { verifyToken } = require("../../helpers/authHelper");
 require("dotenv").config();
 
 const logoutUser = (req, res) => {

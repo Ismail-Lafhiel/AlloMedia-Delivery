@@ -31,7 +31,10 @@ const userSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: [true, "Phone number is required"],
-    match: [/^\+?[1-9]\d{1,14}$/, "Phone number must be valid and in international format"],
+    match: [
+      /^\+?[1-9]\d{1,14}$/,
+      "Phone number must be valid and in international format",
+    ],
     trim: true,
   },
   createdAt: {
@@ -43,6 +46,7 @@ const userSchema = new mongoose.Schema({
   lastLoginAttempt: { type: Date },
   resetConfirmationCode: { type: String },
   resetCodeExpires: { type: Date },
+  lockoutUntil: { type: Date, default: null },
 });
 
 const User = mongoose.model("User", userSchema);
